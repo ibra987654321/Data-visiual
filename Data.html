@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <title>Document</title>
+    <style>
+      thead td {
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 class="container center">
+      Отчет
+      <iframe id="txtArea1" style="display: none"></iframe>
+      <button class="btn" id="btnExport" onclick="fnExcelReport();">
+        EXPORT
+      </button>
+    </h1>
+
+    <hr />
+    <div id="name" class="container"></div>
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase.js"></script>
+
+    <!-- If you enabled Analytics in your project, add the Firebase SDK for Analytics -->
+    <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase-analytics.js"></script>
+
+    <!-- Add Firebase products that you want to use -->
+    <script>
+      try {
+        let firebaseConfig = {
+          apiKey: "AIzaSyCDKnyo99uF6A6MzZXWK0KyjwF43dF_0Vs",
+          authDomain: "autcersing.firebaseapp.com",
+          projectId: "autcersing",
+          storageBucket: "autcersing.appspot.com",
+          messagingSenderId: "681985000411",
+          appId: "1:681985000411:web:beba6032a56df7f0655dfe",
+          measurementId: "G-H078HMFN3Y",
+        };
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        firebase.analytics().logEvent("notification_received");
+
+        let rootRef = firebase.database().ref().child("Assets");
+        // ====Functions=====
+        function getId(tag) {
+          return document.getElementById(tag);
+        }
+
+        let playersRef = firebase.database().ref();
+
+        playersRef.orderByChild("date").on("child_added", function (data) {
+          let users = data.val();
+          let html = ``;
+          let name = Object.entries(users).map((i) => i[1]);
+          html = `<table id="table">  
+              <thead>
+                <td> Имя</td>
+                <td> Email</td>
+                <td> Номер</td>
+                <td> Вид услуг</td>
+                <td> Дата заявки</td>
+              </thead>`;
+          name.forEach(function (item, i, arr) {
+            html += `
+        <tr>
+          <td> ${item.name}</td>
+          <td> ${item.email}</td>
+          <td> ${item.number}</td>
+          <td> ${item.service}</td>
+          <td> ${item.date}</td>
+        </tr>
+      `;
+          });
+          html += "</table>";
+          getId("name").innerHTML = html;
+        });
+      } catch (error) {}
+      function fnExcelReport() {
+        var tab_text = "<table border='2px'><tr bgcolor='#87AFC6'>";
+        var textRange;
+        var j = 0;
+        tab = document.getElementById("table"); // id of table
+
+        for (j = 0; j < tab.rows.length; j++) {
+          tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+          //tab_text=tab_text+"</tr>";
+        }
+
+        tab_text = tab_text + "</table>";
+        tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, ""); //remove if u want links in your table
+        tab_text = tab_text.replace(/<img[^>]*>/gi, ""); // remove if u want images in your table
+        tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // reomves input params
+
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+          // If Internet Explorer
+          txtArea1.document.open("txt/html", "replace");
+          txtArea1.document.write(tab_text);
+          txtArea1.document.close();
+          txtArea1.focus();
+          sa = txtArea1.document.execCommand(
+            "SaveAs",
+            true,
+            "Say Thanks to Sumit.xls"
+          );
+        } //other browser not tested on IE 11
+        else
+          sa = window.open(
+            "data:application/vnd.ms-excel," + encodeURIComponent(tab_text)
+          );
+
+        return sa;
+      }
+    </script>
+  </body>
+</html>
